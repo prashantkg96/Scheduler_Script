@@ -234,6 +234,15 @@ def main_func():
 
 if __name__ == "__main__":
     print("Starting Scheduler Script...\n")
-    main_func()
+    try:
+        main_func()
+    except Exception as e:
+        print("\nScheduler Script Error ⇩ ⇩ ⇩ ⇩ ⇩ ⇩ ⇩")
+        print(e)
+        traceback.print_exception(*sys.exc_info())
+        time.sleep(5)
+        print("Error ⇧ ⇧ ⇧ ⇧ ⇧ ⇧ ⇧\n")
+        print(f"Scheduler Script execution has failed!!!!\n")
+        
 
 
