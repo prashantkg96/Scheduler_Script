@@ -183,6 +183,7 @@ def main_func():
                 
                 schedulerSheet_DF = pd.read_excel(currentPath + "\\Scheduler_Sheet.xlsx", sheet_name="Monthly").fillna(0)
                 schedulerSheet_DF = schedulerSheet_DF[(schedulerSheet_DF['Day of Month'].values == current_date_of_month)|(schedulerSheet_DF['Day of Month'].values == last_day_less_n_string)]
+                schedulerSheet_DF.reset_index(drop=True, inplace=True)
                 if len(schedulerSheet_DF)>0:
                     print("\n\n\n\n")
                     print(f"------------------------------------------------------___Day: {current_date_of_month}___------------------------------------------------------")
