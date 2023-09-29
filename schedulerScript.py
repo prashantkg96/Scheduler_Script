@@ -13,6 +13,7 @@ import traceback
 from calendar import monthrange
 
 
+
 def callForeignScriptMainFun(currentPath, scriptAddress, scriptName): 
     # passing the file name and path as argument
     spec = importlib.util.spec_from_file_location("mod", scriptAddress + "\\" + scriptName)   
@@ -57,9 +58,11 @@ def getTimeDeltaSeconds(sTime):  #Takes time from excel dataframe and return "ex
 def runAdhocScripts(currentPath, currRunday, adhocCounter, sTime = ""):
     thisRunDay = getCurrDay()
     deltaTimeSeconds = 0
+    sTime_wasBlank = False
     if sTime == "":
         deltaTimeSeconds = (datetime.combine((datetime.now() + timedelta(1)).date(), timegen(0,0,0))- datetime.now())
         deltaTimeSeconds = deltaTimeSeconds.total_seconds()
+        sTime_wasBlank = True
     else:
         deltaTimeSeconds = getTimeDeltaSeconds(sTime)
     
@@ -71,24 +74,29 @@ def runAdhocScripts(currentPath, currRunday, adhocCounter, sTime = ""):
     if currRunday != thisRunDay:
         return adhocCounter
     print("\n\n")
-    print(f"{adhocCounter}.----->>>>>>>>>> Running AdHoc Scripts <<<<<<<<<<-----")
     adHoc_DF = pd.read_excel(currentPath + "\\Scheduler_Sheet.xlsx", sheet_name="AdHoc").fillna(0)
-    for thisAdhoc in range(len(adHoc_DF)):
-        adHocScriptPath = str(adHoc_DF['Path'][thisAdhoc]).strip()
-        adHocScriptName = str(adHoc_DF['Script Name'][thisAdhoc]).strip()
-        adHocScriptRunStat = str(adHoc_DF['Run (Y/N)'][thisAdhoc]).strip()
-        if adHocScriptRunStat == "N":  # iterate to next item
-            continue 
-        
-        AD_sTime = datetime.now()
-        print(f"--->>> {adHocScriptName} <<<---")
-        print(f"Current Run Day: {currRunday}; Actual Run Day: {thisRunDay}; Adhoc Cycle: {adhocCounter}; Script Serial: {thisAdhoc+1}; Execution Start Time: {AD_sTime}")
-        callForeignScriptMainFun(currentPath, adHocScriptPath, adHocScriptName)
-        AD_eTime = datetime.now()
-        AD_totalScriptTimeDelta = (AD_eTime - AD_sTime)
-        print(f"Execution Finish Time: {AD_eTime}; Total Runtime: {AD_totalScriptTimeDelta}")
-        print("\n")
-    adhocCounter  = adhocCounter  +1
+    if len(adHoc_DF) > 0:
+        print(f"{adhocCounter}.----->>>>>>>>>> Running AdHoc Scripts <<<<<<<<<<-----")
+        for thisAdhoc in range(len(adHoc_DF)):
+            adHocScriptPath = str(adHoc_DF['Path'][thisAdhoc]).strip()
+            adHocScriptName = str(adHoc_DF['Script Name'][thisAdhoc]).strip()
+            adHocScriptRunStat = str(adHoc_DF['Run (Y/N)'][thisAdhoc]).strip()
+            if adHocScriptRunStat == "N":  # iterate to next item
+                continue 
+            
+            AD_sTime = datetime.now()
+            print(f"--->>> {adHocScriptName} <<<---")
+            print(f"Current Run Day: {currRunday}; Actual Run Day: {thisRunDay}; Adhoc Cycle: {adhocCounter}; Script Serial: {thisAdhoc+1}; Execution Start Time: {AD_sTime}")
+            callForeignScriptMainFun(currentPath, adHocScriptPath, adHocScriptName)
+            AD_eTime = datetime.now()
+            AD_totalScriptTimeDelta = (AD_eTime - AD_sTime)
+            print(f"Execution Finish Time: {AD_eTime}; Total Runtime: {AD_totalScriptTimeDelta}")
+            print("\n")
+        adhocCounter  = adhocCounter  +1
+    elif sTime_wasBlank == True and len(adHoc_DF) < 1:
+        sleepTillTommorow()
+    else:
+        time.sleep(30*60)
     adhocCounter  = runAdhocScripts(currentPath, currRunday, adhocCounter, sTime)
 
 
@@ -243,6 +251,5 @@ if __name__ == "__main__":
         time.sleep(5)
         print("Error ⇧ ⇧ ⇧ ⇧ ⇧ ⇧ ⇧\n")
         print(f"Scheduler Script execution has failed!!!!\n")
-        
 
 
